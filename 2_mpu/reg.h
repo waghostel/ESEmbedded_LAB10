@@ -149,19 +149,29 @@
 
 #define MPU_RASR_OFFSET 0x10
 #define MPU_RASR_VALUE(xn, ap, type, srd, size) (((uint32_t)(xn) << 28) | ((uint32_t)(ap) << 24) | ((uint32_t)(type) << 16) | ((uint32_t)(srd) << 8) | ((uint32_t)(size) << 1) | UINT32_1)
-#define MPU_XN_DISABLE 0
-#define MPU_XN_ENABLE 1
+#define MPU_XN_DISABLE 0 //Region execution fetch permitted
+#define MPU_XN_ENABLE 1  //Region execution fetch allowed
 #define MPU_AP_NO_ACCESS 0b000
-#define MPU_AP_PRIV_ACCESS 0b001
+#define MPU_AP_PRIV_ACCESS 0b001 //previlage access only
 #define MPU_AP_NPRIV_RO 0b010
-#define MPU_AP_FULL_ACCESS 0b011
+#define MPU_AP_FULL_ACCESS 0b011 ////Region execution fetch permitted
 #define MPU_AP_PRIV_RO 0b101
 #define MPU_AP_RO 0b110
 #define MPU_TYPE_FLASH 0b000010
 #define MPU_TYPE_SRAM 0b000110
 #define MPU_TYPE_EXRAM 0b000111
 #define MPU_TYPE_PERIPHERALS 0b000101
-#define MPU_REGION_SIZE_32B 0b00100
+#define MPU_SRD_DISABLE 1 //Disable subregion
+#define MPU_SRD_ENABLE 0  //Enable subregion
+#define MPU_REGION_SIZE_32B 0b00100 //Define the size of the region
+#define MPU_REGION_0 0
+#define MPU_REGION_1 1
+#define MPU_REGION_2 2
+#define MPU_REGION_3 3
+#define MPU_REGION_4 4
+#define MPU_REGION_5 5
+#define MPU_REGION_6 6
+#define MPU_REGION_7 7
 #define MPU_REGION_SIZE_64B 0b00101
 #define MPU_REGION_SIZE_128B 0b00110
 #define MPU_REGION_SIZE_256B 0b00111

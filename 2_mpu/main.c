@@ -13,7 +13,7 @@ int main(void)
 	extern uint32_t _msp_init;
 
 	uint32_t *msp_init = &_msp_init;
-	uint32_t *psp_init = msp_init - 8 * 1024;
+	uint32_t *psp_init = msp_init - 8 * 1024; //
 
 	init_usart1();
 
@@ -29,9 +29,10 @@ int main(void)
 	printf("[Kernel] Switch to unprivileged thread mode & start user task (psp_init = 0x%x).\r\n\n", (unsigned int)psp_init);
 
 	//start user task
-	??????
+	start_user((uint32_t *)user_task,psp_init);
 
 	while (1) //should not go here
+	blink(LED_ORANGE);
 		;
 }
 
@@ -43,27 +44,40 @@ void user_task(void)
 
 void set_mpu(void)
 {
-	//set region 0: flash (0x00000000), 1MB, allow execution, full access, enable all subregion
-	??????
+	printf("Begin set_mpu() region\n");
+//set region 0: flash (0x00000000), 1MB, allow execution, full access, enable all subregion
+	
+	//Open and define the starting address of region 0
+	REG(MPU_BASE + MPU_RBAR_OFFSET)=MPU_RBAR_VALUE(0x00000000,MPU_REGION_0); 
 
-	//set region 1: sram (0x20000000), 128KB, forbid execution, full access, enable all subregion
-	??????
+	//MPU_RASR_VALUE(xn, ap, type, srd, size)
+	REG(MPU_BASE + MPU_RASR_OFFSET) = MPU_RASR_VALUE(MPU_XN_ENABLE,MPU_AP_FULL_ACCESS,MPU_TYPE_FLASH,MPU_SRD_ENABLE,MPU_REGION_SIZE_1MB);
+	
 
-	//set region 2: RCC_AHB1ENR, 32B, forbid execution, full access, enable all subregion
-	??????
+//set region 1: sram (0x20000000), 128KB, forbid execution, full access, enable all subregion
+	REG(MPU_BASE + MPU_RBAR_OFFSET) = MPU_RBAR_VALUE(0x20000000,MPU_REGION_1);
+	REG(MPU_BASE + MPU_RASR_OFFSET) = MPU_RASR_VALUE(MPU_XN_DISABLE, MPU_AP_FULL_ACCESS, MPU_TYPE_SRAM, MPU_SRD_ENABLE, MPU_REGION_SIZE_128KB);
 
-	//set region 3: GPIOD, 32B, forbid execution, full access, enable all subregion
-	??????
-
+//set region 2: RCC_AHB1ENR, 32B, forbid execution, full access, enable all subregion
+	REG(MPU_BASE + MPU_RBAR_OFFSET) = MPU_RBAR_VALUE(RCC_AHB1ENR_OFFSET,MPU_REGION_2);
+	REG(MPU_BASE + MPU_RASR_OFFSET) = MPU_RASR_VALUE(MPU_XN_DISABLE, MPU_AP_FULL_ACCESS, MPU_TYPE_FLASH, MPU_SRD_ENABLE, MPU_REGION_SIZE_32B);
+	//最小可用寬度check
+	
+//set region 3: GPIOD, 32B, forbid execution, full access, enable all subregion
+	REG(MPU_BASE + MPU_RBAR_OFFSET) = MPU_RBAR_VALUE(GPIO_BASE(GPIO_PORTD),MPU_REGION_3);
+	REG(MPU_BASE + MPU_RASR_OFFSET) = MPU_RASR_VALUE(MPU_XN_DISABLE, MPU_AP_FULL_ACCESS, MPU_TYPE_PERIPHERALS,MPU_SRD_ENABLE, MPU_REGION_SIZE_32B);
+	
+	
 	//disable region 4 ~ 7
-	for (??????)
-	{
-		??????
+	for (int i=4;i<8;i++){
+		REG(MPU_BASE + MPU_RBAR_OFFSET) = MPU_RBAR_VALUE(0,i);
+		REG(MPU_BASE + MPU_RASR_OFFSET)= 0;
 	}
 
 	//enable the default memory map as a background region for privileged access (PRIVDEFENA)
-	??????
+	SET_BIT(MPU_BASE + MPU_CTRL_OFFSET, MPU_PRIVDEFENA_BIT);
 
 	//enable mpu
-	??????
+	SET_BIT(MPU_BASE + MPU_CTRL_OFFSET, MPU_ENABLE_BIT);
+	printf("End set_mpu() region\n");
 }
